@@ -1,5 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
+use Redis;
+
 /**
  *     Бывает, что на какое-то событие приходит много одинаковых пакетов,
  *     что не удобно, если на это событие надо создать какую-то сущность.
@@ -9,21 +13,21 @@
  *     Какой укажем ttl, в течении такого времени будут блокироваться.
  *    
  *     Пример:
- *     $redis = new Redis;
- *     $spamFilter = new SpamFilter(redis: $redis, ttl: 1);
+ *     $spamFilter = new SpamFilter(ttl: 1);
  *     $spamFilter->stopDuplicate($dealId);
  */
+
 
 class SpamFilter
 {
     protected Redis $redis;
     protected int $ttl = 0;
 
-    public function __construct(Redis $redis, int $ttl)
+    public function __construct(int $ttl)
     {
-        $this->redis = $redis;
         $this->ttl = $ttl;
-        $this->redis->connect('localhost', 6379);
+        $this->redis = new Redis;
+        $this->redis->connect('localhost');
     }
 
     public function stopDuplicate(int | string $data): void
@@ -32,7 +36,7 @@ class SpamFilter
         $this->lockData($data);
     }
 
-    private function lockData(int | string $data): void
+    private function lockData(string $data): void
     {
         $this->redis->setex($data, $this->ttl, 'the task is begining processed');
     }
