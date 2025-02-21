@@ -1,9 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
-use Redis;
-
 /**
  *     Бывает, что на какое-то событие приходит много одинаковых пакетов,
  *     что не удобно, если на это событие надо создать какую-то сущность.
@@ -68,5 +64,15 @@ class SpamFilter
         }
 
         return false;
+    }
+
+    public function getRedis()
+    {
+        return $this->redis;
+    }
+
+    public function deleteFromFilter(int|string $value): bool
+    {
+            return $this->redis->del($value) != 0;
     }
 }
